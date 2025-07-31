@@ -19,12 +19,28 @@ class Configuration:
         default=prompts.SYSTEM_PROMPT,
         metadata={
             "description": "The system prompt to use for the agent's interactions. "
-            "This prompt sets the context and behavior for the agent."
+            "This prompt sets the context and behavior for the agent. "
+        },
+    )
+
+    deceased_name: str = field(
+        default="Robert Chen",
+        metadata={
+            "description": "The name of the deceased person being memorialized. "
+            "This will be used throughout the interview to personalize questions."
+        },
+    )
+
+    interviewee_name: str = field(
+        default="Sarah Chen",
+        metadata={
+            "description": "The name of the person being interviewed. "
+            "This helps personalize the conversation and build rapport."
         },
     )
 
     model: Annotated[str, {"__template_metadata__": {"kind": "llm"}}] = field(
-        default="anthropic/claude-3-5-sonnet-20240620",
+        default="openai/gpt-4.1-nano",
         metadata={
             "description": "The name of the language model to use for the agent's main interactions. "
             "Should be in the form: provider/model-name."

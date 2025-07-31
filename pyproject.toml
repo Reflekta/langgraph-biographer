@@ -64,4 +64,6 @@ convention = "google"
 dev = [
     "langgraph-cli[inmem]>=0.1.71",
     "pytest>=8.3.5",
+    "mypy>=1.13.0",
+    "ruff>=0.8.2",
 ]

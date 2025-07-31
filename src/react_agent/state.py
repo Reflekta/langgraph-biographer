@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Sequence
+from typing import Sequence, List, Optional, Dict, Any
 
 from langchain_core.messages import AnyMessage
 from langgraph.graph import add_messages
@@ -53,8 +53,17 @@ class State(InputState):
     It is set to 'True' when the step count reaches recursion_limit - 1.
     """
 
-    # Additional attributes can be added here as needed.
-    # Common examples include:
-    # retrieved_documents: List[Document] = field(default_factory=list)
-    # extracted_entities: Dict[str, Any] = field(default_factory=dict)
-    # api_connections: Dict[str, Any] = field(default_factory=dict)
+    # Interview-specific state fields
+    questions: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    """Dictionary storing all interview questions and their metadata."""
+    
+    question: Optional[str] = field(default=None)
+    """The current question being asked in the interview."""
+    
+    current_question_id: Optional[str] = field(default=None)
+    """ID of the current question being asked."""
+    
+    finished: bool = field(default=False)
+    """Whether the interview has been completed."""
+    
+    
