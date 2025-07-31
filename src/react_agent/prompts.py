@@ -89,13 +89,22 @@ AVAILABLE QUESTIONS (Priority {priority}):
 
 Instructions:
 1. Analyze the conversation context to understand what has been discussed
-2. Select the question that would be most natural and relevant to ask next
-3. Consider what information would logically follow from what's been shared
-4. Look for natural conversation flow - if they mentioned uncertainty about details, maybe ask about something they're more likely to know
-5. If they gave short answers about factual details, consider asking about memories or stories they might have
-6. If they seem knowledgeable about a topic, you can ask follow-up questions in that area
-7. Avoid questions that seem repetitive or out of place given the current flow
-8. Prioritize questions that build on what they've already shared
+2. Be RELATIONSHIP-AWARE: Pay attention to family relationships mentioned:
+   - If they're a grandchild, prioritize questions about children (their parents), family life, etc.
+   - If they're a child, focus on spouse details, siblings, parents, etc.
+   - If they're a sibling, ask about parents, childhood, family dynamics
+   - If they're a friend/neighbor, focus on personality, community involvement, external perspective
+3. Select the question that would be most natural and relevant to ask next
+4. Consider what information would logically follow from what's been shared
+5. Look for natural conversation flow - if they mentioned uncertainty about details, maybe ask about something they're more likely to know
+6. If they gave short answers about factual details, consider asking about memories or stories they might have
+7. If they seem knowledgeable about a topic, you can ask follow-up questions in that area
+8. PRIORITIZE questions that make logical sense given their relationship:
+   - Grandchildren likely know about the deceased's children (their parents)
+   - Children know about spouse, siblings, maybe parents
+   - Siblings know about parents, childhood experiences
+9. Avoid questions that seem repetitive or out of place given the current flow
+10. Prioritize questions that build on what they've already shared
 
 CRITICAL: Respond with ONLY the numeric question ID from the list above. 
 For example, if you select "ID: 5 | What was their occupation?", respond with just: 5
@@ -112,24 +121,32 @@ QUESTION TO ASK: {question}
 
 Instructions:
 1. Create a brief, natural conversational response that acknowledges what they shared and then weaves in the question
-2. Sometimes include a short acknowledgment or conversational moment before the question:
+2. Be RELATIONSHIP-AWARE: Pay attention to family connections mentioned in the conversation:
+   - If they said "grandfather/grandmother" → they're a grandchild, so their parents are the deceased's children
+   - If they said "father/mother" → they're a child, ask about siblings, spouse details, etc.
+   - If they said "brother/sister" → ask about parents, other siblings, etc.
+   - If they said "friend/neighbor" → focus on external perspective questions
+3. ADAPT questions based on relationships:
+   - Children questions: "Oh, that's wonderful - I'm excited to talk with their grandchild! So who were his children - your parents?"
+   - Parent questions: "Since you mentioned your grandfather's family, what do you know about his parents - your great-grandparents?"
+   - Make logical connections: grandchild → parents are the children, etc.
+4. Sometimes include a short acknowledgment or conversational moment before the question:
    - "That's helpful to know about his early years..."
-   - "I can imagine that was special..."
+   - "Oh, that's exciting - I'm talking with their grandson/granddaughter!"
    - "That gives me a good picture..."
-   - "Okay, going in another direction, I was wondering..."
-   - "That makes sense..."
-3. Vary your approach:
+   - "Going in another direction, I was wondering..."
+5. Vary your approach:
    - DIRECT FOLLOW-UP: When it's clearly related, ask directly
    - BRIEF ACKNOWLEDGMENT: Add a sentence acknowledging their response first
+   - RELATIONSHIP CONNECTION: Show excitement about the family connection
    - TOPIC SHIFT: Use phrases like "Going in another direction..." or "I'm also curious about..."
-4. Match the conversational tone appropriately:
+6. Match the conversational tone appropriately:
    - For "no" answers: "That's okay" or "No worries" then transition naturally
    - For brief answers: Brief acknowledgment, don't over-elaborate
    - For detailed answers: Acknowledge something specific they mentioned
-5. Keep it conversational and human - like a friend asking about someone important
-6. Don't always jump straight to the question - sometimes have a brief conversational moment first
-7. Vary your conversation starters and avoid repetitive phrases
-8. If this is a follow-up for more complete information, phrase it as asking for specific details
+7. Keep it conversational and human - like a friend asking about someone important
+8. Don't always jump straight to the question - sometimes have a brief conversational moment first
+9. Vary your conversation starters and avoid repetitive phrases
 
 The interviewee is {interviewee_name} and they're sharing memories about {deceased_name}.
 
