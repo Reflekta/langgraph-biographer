@@ -4,96 +4,96 @@
     "question": "What was your relationship to {NAME}?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "What was {NAME}'s full name, and when and where were they born?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "Where did {NAME} grow up, and how do you think that place influenced them?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "Were they married or partnered? What was that relationship like?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "Did {NAME} have children, or play a meaningful role in others' lives as a mentor or caregiver?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "What do you know about {NAME}'s parents, siblings, or family life—even through stories they told?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "Where did {NAME} live throughout their life, and did any of those places feel especially meaningful to them?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "What kind of work did {NAME} do throughout their life—and how did they feel about it?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "Were they involved in community work, military service, or something that gave them a sense of contribution?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "What do you most want people to remember, understand, or feel about who {NAME} truly was?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "How would you describe {NAME}'s personality in a few words?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "What made {NAME} laugh—or what kind of humor did they have?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "What did {NAME} seem to care about most—what values guided their choices?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "What kind of energy did {NAME} bring into a room or conversation?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "Did {NAME} ever share a story from early in life that seemed to define them?"
   },
   {
-    "priority": 0,
+    "priority": 1,
     "question": "What were {NAME} good at—skills, talents, or passions that stood out?"
   },
   {
-    "priority": 1,
-    "question": "Did {NAME} have pets at times in their life? Did they have any funny stories they told about them?"
+    "priority": 2,
+    "question": "Did {NAME} have pets at times in their life? Any funny stories about them?"
   },
   {
-    "priority": 1,
+    "priority": 2,
     "question": "What kind of problems or challenges did {NAME} enjoy solving—or avoid?"
   },
   {
-    "priority": 1,
+    "priority": 2,
     "question": "How did {NAME} typically handle disagreement, stress, or conflict?"
   },
   {
-    "priority": 1,
+    "priority": 2,
     "question": "How did {NAME} show affection or care for others—through words, actions, gestures?"
   },
   {
-    "priority": 1,
+    "priority": 2,
     "question": "Was there something {NAME} made, built, or accomplished that they were proud of?"
   },
   {
-    "priority": 1,
+    "priority": 2,
     "question": "When did {NAME} pass away, and where were they living at that time?"
   },
   {
     "priority": 2,
-    "question": "How would you describe {NAME}'s physical appearance - their height, build, distinctive features?"
+    "question": "How would you describe {NAME}'s physical appearance—height, build, distinctive features?"
   },
   {
     "priority": 2,
-    "question": "What were the major moves or relocations in {NAME}'s life? Why did they move?"
+    "question": "What were the major moves or relocations in {NAME}'s life, and why did they move?"
   },
   {
     "priority": 2,
@@ -101,7 +101,7 @@
   },
   {
     "priority": 2,
-    "question": "Who were {NAME}'s closest friends? What can you tell me about these relationships?"
+    "question": "Who were {NAME}'s closest friends, and what were those relationships like?"
   },
   {
     "priority": 2,
