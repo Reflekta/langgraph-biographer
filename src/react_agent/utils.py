@@ -76,13 +76,18 @@ def personalise(text: str, subject_info: dict) -> str:
     return text.format(**subject_info)
 
 
-def get_personalized_questions() -> List[dict]:
+def get_personalized_questions(deceased_name: str = None) -> List[dict]:
     """Get all biographical questions with {NAME} placeholders replaced with subject name."""
+    # Use provided name or fall back to default
+    subject_info = DEFAULT_SUBJECT_INFO.copy()
+    if deceased_name:
+        subject_info["NAME"] = deceased_name
+    
     personalized_questions = []
     for question in BIOGRAPHICAL_QUESTIONS:
         personalized_question = {
             **question,
-            "question": personalise(question["question"], DEFAULT_SUBJECT_INFO)
+            "question": personalise(question["question"], subject_info)
         }
         personalized_questions.append(personalized_question)
     return personalized_questions

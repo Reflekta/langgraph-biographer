@@ -5,84 +5,91 @@
   },
   {
     "priority": 0,
-    "question": "When was {NAME} born?"
+    "question": "What was {NAME}'s full name, and when and where were they born?"
   },
   {
     "priority": 0,
-    "question": "Where was {NAME} born, and where did they spend most of their life?"
+    "question": "Where did {NAME} grow up, and how do you think that place influenced them?"
   },
   {
     "priority": 0,
+    "question": "Were they married or partnered? What was that relationship like?"
+  },
+  {
+    "priority": 0,
+    "question": "Did {NAME} have children, or play a meaningful role in others' lives as a mentor or caregiver?"
+  },
+  {
+    "priority": 0,
+    "question": "What do you know about {NAME}'s parents, siblings, or family life—even through stories they told?"
+  },
+  {
+    "priority": 0,
+    "question": "Where did {NAME} live throughout their life, and did any of those places feel especially meaningful to them?"
+  },
+  {
+    "priority": 0,
+    "question": "What kind of work did {NAME} do throughout their life—and how did they feel about it?"
+  },
+  {
+    "priority": 0,
+    "question": "Were they involved in community work, military service, or something that gave them a sense of contribution?"
+  },
+  {
+    "priority": 0,
+    "question": "What do you most want people to remember, understand, or feel about who {NAME} truly was?"
+  },
+  {
+    "priority": 0,
+    "question": "How would you describe {NAME}'s personality in a few words?"
+  },
+  {
+    "priority": 0,
+    "question": "What made {NAME} laugh—or what kind of humor did they have?"
+  },
+  {
+    "priority": 0,
+    "question": "What did {NAME} seem to care about most—what values guided their choices?"
+  },
+  {
+    "priority": 0,
+    "question": "What kind of energy did {NAME} bring into a room or conversation?"
+  },
+  {
+    "priority": 0,
+    "question": "Did {NAME} ever share a story from early in life that seemed to define them?"
+  },
+  {
+    "priority": 0,
+    "question": "What were {NAME} good at—skills, talents, or passions that stood out?"
+  },
+  {
+    "priority": 1,
+    "question": "Did {NAME} have pets at times in their life? Did they have any funny stories they told about them?"
+  },
+  {
+    "priority": 1,
+    "question": "What kind of problems or challenges did {NAME} enjoy solving—or avoid?"
+  },
+  {
+    "priority": 1,
+    "question": "How did {NAME} typically handle disagreement, stress, or conflict?"
+  },
+  {
+    "priority": 1,
+    "question": "How did {NAME} show affection or care for others—through words, actions, gestures?"
+  },
+  {
+    "priority": 1,
+    "question": "Was there something {NAME} made, built, or accomplished that they were proud of?"
+  },
+  {
+    "priority": 1,
+    "question": "When did {NAME} pass away, and where were they living at that time?"
+  },
+  {
+    "priority": 2,
     "question": "How would you describe {NAME}'s physical appearance - their height, build, distinctive features?"
-  },
-
-  {
-    "priority": 0,
-    "question": "What was {NAME}'s marital status? If married, tell me about their spouse."
-  },
-  {
-    "priority": 0,
-    "question": "Did {NAME} have children? If so, can you tell me about them?"
-  },
-  {
-    "priority": 0,
-    "question": "What was {NAME}'s primary occupation or career throughout their life?"
-  },
-  {
-    "priority": 1,
-    "question": "Can you tell me about {NAME}'s parents - their names and what you knew about them?"
-  },
-  {
-    "priority": 1,
-    "question": "Did {NAME} have siblings? What can you share about their brothers and sisters?"
-  },
-  {
-    "priority": 1,
-    "question": "What do you know about {NAME}'s extended family - grandparents, aunts, uncles, cousins?"
-  },
-  {
-    "priority": 1,
-    "question": "How would you describe {NAME}'s family dynamics and relationships?"
-  },
-  {
-    "priority": 1,
-    "question": "If {NAME} was married more than once, can you tell me about their other marriages?"
-  },
-  {
-    "priority": 1,
-    "question": "What do you remember about {NAME}'s relationship with their children?"
-  },
-  {
-    "priority": 1,
-    "question": "Did {NAME} have grandchildren? What was their relationship like with them?"
-  },
-  {
-    "priority": 1,
-    "question": "What family traditions or customs were important to {NAME}?"
-  },
-  {
-    "priority": 1,
-    "question": "How did {NAME} meet their spouse or significant other? What do you remember about their courtship?"
-  },
-  {
-    "priority": 1,
-    "question": "What do you know about any family difficulties or challenges {NAME} faced?"
-  },
-  {
-    "priority": 1,
-    "question": "Were there any family members {NAME} was particularly close to or distant from?"
-  },
-  {
-    "priority": 1,
-    "question": "What role did {NAME} typically play in family gatherings or celebrations?"
-  },
-  {
-    "priority": 2,
-    "question": "Where did {NAME} go to school? What do you know about their education?"
-  },
-  {
-    "priority": 2,
-    "question": "What was {NAME}'s career path? How did they get started in their profession?"
   },
   {
     "priority": 2,
@@ -94,30 +101,6 @@
   },
   {
     "priority": 2,
-    "question": "Did {NAME} serve in the military? What can you tell me about their service?"
-  },
-  {
-    "priority": 2,
-    "question": "What health challenges did {NAME} face throughout their life?"
-  },
-  {
-    "priority": 2,
-    "question": "What were some of {NAME}'s major life accomplishments or achievements?"
-  },
-  {
-    "priority": 2,
-    "question": "Did {NAME} have any life-changing experiences or turning points you're aware of?"
-  },
-  {
-    "priority": 2,
-    "question": "What do you know about {NAME}'s retirement years? How did they spend that time?"
-  },
-  {
-    "priority": 2,
-    "question": "What were the circumstances surrounding {NAME}'s final illness or passing?"
-  },
-  {
-    "priority": 2,
     "question": "Who were {NAME}'s closest friends? What can you tell me about these relationships?"
   },
   {
@@ -126,78 +109,14 @@
   },
   {
     "priority": 2,
-    "question": "How did {NAME} contribute to their community? What causes mattered to them?"
-  },
-  {
-    "priority": 3,
     "question": "Was {NAME} religious or spiritual? How did faith play a role in their life?"
   },
   {
-    "priority": 3,
-    "question": "What were {NAME}'s mentors or role models? Who influenced them significantly?"
-  },
-  {
-    "priority": 3,
-    "question": "What kind of social circle did {NAME} maintain? Were they outgoing or more private?"
-  },
-  {
-    "priority": 3,
-    "question": "Did {NAME} have any enemies or difficult relationships? What do you know about those?"
-  },
-  {
-    "priority": 3,
-    "question": "How would you describe {NAME}'s personality? What were their most distinctive traits?"
-  },
-  {
-    "priority": 3,
-    "question": "What was {NAME}'s sense of humor like? What made them laugh?"
-  },
-  {
-    "priority": 3,
-    "question": "How did {NAME} handle stress, conflict, or difficult situations?"
-  },
-  {
-    "priority": 3,
-    "question": "What values or principles seemed most important to {NAME}?"
-  },
-  {
-    "priority": 3,
-    "question": "How did {NAME} communicate? Were they talkative, quiet, direct, diplomatic?"
-  },
-  {
-    "priority": 3,
-    "question": "What were {NAME}'s hobbies, interests, or passions outside of work?"
-  },
-  {
-    "priority": 3,
-    "question": "What did {NAME} worry about? What kept them up at night?"
-  },
-  {
-    "priority": 3,
-    "question": "How did others typically react to {NAME}? What impression did they make on people?"
-  },
-  {
-    "priority": 4,
+    "priority": 2,
     "question": "What is your most vivid or treasured memory of {NAME}?"
   },
   {
-    "priority": 4,
-    "question": "What would {NAME} want to be remembered for? What was their legacy?"
-  },
-  {
-    "priority": 4,
+    "priority": 2,
     "question": "Is there a story about {NAME} that perfectly captures who they were as a person?"
-  },
-  {
-    "priority": 4,
-    "question": "What advice or wisdom did {NAME} share that stayed with you?"
-  },
-  {
-    "priority": 4,
-    "question": "If {NAME} could see their family and friends today, what do you think they would say?"
-  },
-  {
-    "priority": 4,
-    "question": "What aspects of {NAME}'s character do you see living on in their children or family members?"
   }
 ]

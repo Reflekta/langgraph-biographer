@@ -125,10 +125,11 @@ async def contextualize_question_with_llm(state: State, question: str) -> str:
 async def select_question_node(state: State) -> dict:
     """Select the next question to ask based on priority and status, using LLM for intelligent selection."""
     questions_update = state.questions.copy()
+    configuration = Configuration.from_context()
     
     # Ensure questions are initialised
     if not questions_update:
-        for q in get_personalized_questions():
+        for q in get_personalized_questions(configuration.deceased_name):
             questions_update[q["id"]] = {
                 "question": q["question"],
                 "priority": q["priority"],
@@ -139,14 +140,22 @@ async def select_question_node(state: State) -> dict:
                 "follow_up_count": 0,
             }
     
+    # For the very first interaction, just initialize and pass through
+    if len(state.messages) <= 1:
+        return {"questions": questions_update}
+    
     # Check if we need a new question (no current question OR current question is complete)
     need_new_question = (
-        not state.question or 
-        state.question.strip() == "" or
-        (state.current_question_id and 
-         state.current_question_id in questions_update and 
+        not state.current_question_id or 
+        (state.current_question_id in questions_update and 
          questions_update[state.current_question_id]["status"] == "complete")
     )
+    
+    # Also check if current question exists but is complete (redundant safety check)
+    if (state.current_question_id and 
+        state.current_question_id in questions_update and 
+        questions_update[state.current_question_id]["status"] == "complete"):
+        need_new_question = True
 
     if need_new_question:
         
@@ -159,7 +168,6 @@ async def select_question_node(state: State) -> dict:
         # If all questions are complete, end the interview
         if all_complete:
             return {
-                "question": "",
                 "current_question_id": None,
                 "questions": questions_update,
                 "finished": True,
@@ -168,7 +176,7 @@ async def select_question_node(state: State) -> dict:
         # Find available questions for each priority level, starting from highest priority
         for priority in PRIORITIES:
             available_questions = []
-            for q in get_personalized_questions():
+            for q in get_personalized_questions(configuration.deceased_name):
                 if q["priority"] == priority:
                     qid = q["id"]
                     if questions_update[qid]["status"] == "not_started":
@@ -179,15 +187,14 @@ async def select_question_node(state: State) -> dict:
                 # Only use LLM selection if we have conversation context (more than just welcome message)
                 if len(state.messages) > 2:
                     selected_question = await select_question_with_llm(state, priority, available_questions)
-                    # Contextualize the question for natural flow
-                    contextualized_question = await contextualize_question_with_llm(state, selected_question["question"])
                 else:
                     # For early conversation, just use the first available question
                     selected_question = available_questions[0]
-                    contextualized_question = selected_question["question"]
+                
+                # Mark the question as in progress
+                questions_update[selected_question["id"]]["status"] = "in_progress"
                 
                 return {
-                    "question": contextualized_question,
                     "current_question_id": selected_question["id"],
                     "questions": questions_update,
                 }
@@ -201,7 +208,8 @@ async def answer_analysis_node(state: State) -> dict:
     
     # Initialize questions if empty
     if not questions_update:
-        for q in get_personalized_questions():
+        configuration = Configuration.from_context()
+        for q in get_personalized_questions(configuration.deceased_name):
             questions_update[q["id"]] = {
                 "question": q["question"],
                 "priority": q["priority"],
@@ -212,10 +220,9 @@ async def answer_analysis_node(state: State) -> dict:
                 "follow_up_count": 0,
             }
 
-    # Get the last 5 messages for context
-    recent_messages = state.messages[-5:] if len(state.messages) >= 5 else state.messages
+    # Get user messages to count responses to current question
     user_messages = []
-    for msg in recent_messages:
+    for msg in state.messages:
         if hasattr(msg, 'content') and isinstance(msg, HumanMessage):
             content = msg.content
             # Ensure content is a string
@@ -235,10 +242,11 @@ async def answer_analysis_node(state: State) -> dict:
 
     # Get the current question text
     question_text = next(
-        (q["question"] for q in get_personalized_questions() if q["id"] == current_qid), 
+        (q["question"] for q in get_personalized_questions(configuration.deceased_name) if q["id"] == current_qid), 
         "Unknown"
     )
 
+    
     # Analyze the answer using structured LLM response
     try:
         llm = load_chat_model(configuration.model)
@@ -268,30 +276,22 @@ async def answer_analysis_node(state: State) -> dict:
         questions_update[current_qid]["answers"].append(latest_answer)
         questions_update[current_qid]["analysis"] = analysis_result.brief_analysis
         
-        # Handle follow-up logic
-        current_follow_up_count = questions_update[current_qid].get("follow_up_count", 0)
+        # Count total answers for this question after adding the new one
+        total_answers = len(questions_update[current_qid]["answers"])
         
-        if analysis_result.status == "complete":
+        # Mark as complete if:
+        # 1. LLM says it's complete, OR
+        # 2. We've had 2+ user responses to this question (time to move on)
+        if analysis_result.status == "complete" or total_answers >= 2:
             questions_update[current_qid]["status"] = "complete"
+            if total_answers >= 2:
+                questions_update[current_qid]["analysis"] += " (Marked complete after 2+ responses)"
         elif analysis_result.status == "partial":
-            if analysis_result.follow_up_needed and current_follow_up_count < 1:
-                # Keep as partial for potential follow-up
-                questions_update[current_qid]["status"] = "partial"
-                questions_update[current_qid]["follow_up_count"] = current_follow_up_count + 1
-            else:
-                # Max follow-ups reached or no follow-up needed, mark as complete
-                questions_update[current_qid]["status"] = "complete"
-                questions_update[current_qid]["analysis"] += " (Marked complete after follow-up limit reached)"
+            questions_update[current_qid]["status"] = "partial"
         else:
-            questions_update[current_qid]["status"] = "not_started"
+            questions_update[current_qid]["status"] = "in_progress"
 
-    # Return only state updates when something actually changed to minimize noise
-    # Note: With LangGraph Platform using stream_mode="updates", 
-    # this state change will still be visible in the stream
-    if questions_update != state.questions:
-        return {"questions": questions_update}
-    else:
-        return {}  # No visible update if nothing changed
+    return {"questions": questions_update}
 
 
 def make_welcome_message(configuration: Configuration) -> str:
@@ -310,23 +310,41 @@ async def interview_agent(state: State) -> Dict[str, List[AIMessage]]:
 
     Args:
         state (State): The current state of the conversation.
-        config (RunnableConfig): Configuration for the model run.
 
     Returns:
         dict: A dictionary containing the model's response message.
     """
     configuration = Configuration.from_context()
 
-    # TODO: Fix to handle non first session!
+    # Handle first message with welcome
     if len(state.messages) == 1:
         return {
             "messages": [AIMessage(content=make_welcome_message(configuration))]
         }
 
-    # Initialize the agent with tool binding. Change the agent or add more tools here.
-    interview_agent = load_chat_model(configuration.model).bind_tools(TOOLS)
+    # Check if we have a selected question to ask
+    if state.current_question_id and state.current_question_id in state.questions:
+        current_question_data = state.questions[state.current_question_id]
+        
+        # If this question is in progress and we haven't asked it yet, ask it
+        if current_question_data["status"] == "in_progress":
+            # Contextualize the question based on recent conversation
+            question_text = current_question_data["question"]
+            
+            # Try to contextualize if we have conversation history
+            if len(state.messages) > 2:
+                contextualized_question = await contextualize_question_with_llm(state, question_text)
+            else:
+                contextualized_question = question_text
+            
+            return {
+                "messages": [AIMessage(content=contextualized_question)]
+            }
 
-    # Format the system prompt. Customize this to change the agent's behavior.
+    # For general conversation (no specific question to ask), use regular agent
+    interview_agent_model = load_chat_model(configuration.model).bind_tools(TOOLS)
+
+    # Format the system prompt
     system_message = configuration.system_prompt.format(
         system_time=datetime.now(tz=UTC).isoformat(),
         interviewee_name=configuration.interviewee_name,
@@ -336,7 +354,7 @@ async def interview_agent(state: State) -> Dict[str, List[AIMessage]]:
     # Get the model's response
     response = cast(
         AIMessage,
-        await interview_agent.ainvoke(
+        await interview_agent_model.ainvoke(
             [{"role": "system", "content": system_message}, *state.messages]
         ),
     )
@@ -409,6 +427,7 @@ builder.add_conditional_edges(
 # Add a normal edge from `tools` to `interview_agent`
 # This creates a cycle: after using tools, we always return to the model
 builder.add_edge("tools", "interview_agent")
+
 
 
 # Compile the builder into an executable graph
