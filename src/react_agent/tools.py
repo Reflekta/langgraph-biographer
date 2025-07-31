@@ -19,6 +19,26 @@ from react_agent.state import State
 from react_agent.utils import get_personalized_questions, load_chat_model, get_message_text
 # from react_agent.prompts import TOOL_QUESTION_SELECTION_PROMPT, TOOL_QUESTION_CONTEXTUALIZATION_PROMPT
 
+
+async def end_interview_node(state: State) -> dict:
+    """Node to handle interview completion."""
+    from langchain_core.messages import AIMessage
+    
+    deceased_name = Configuration.from_context().deceased_name
+    
+    end_message = AIMessage(
+        content=f"""Thank you so much for sharing these precious memories of {deceased_name} with me. I've learned enough about them to create a meaningful biography. 
+
+This interview has captured the essence of who they were as a person - their personality, relationships, values, and the impact they had on others. These memories will help keep {deceased_name}'s spirit alive for generations to come.
+
+You can now go chat with {deceased_name} and continue to honor their memory through conversation."""
+    )
+    
+    return {
+        "messages": [end_message],
+        "finished": True
+    }
+
 # Initialize LLM for analysis
 def get_analysis_llm():
     """Get LLM for answer analysis and cross-question matching."""
@@ -39,6 +59,9 @@ class SelectNextQuestionArgs(BaseModel):
     priority: Optional[int] = Field(
         None, description="Priority level to focus on (0-4). If not specified, will check all priorities starting from highest."
     )
+
+class EndInterviewArgs(BaseModel):
+    reason: str = Field(description="Reason for ending the interview")
     
 ### TOOLS ###
 
@@ -162,4 +185,10 @@ def select_next_question(state: Annotated[State, "Current conversation state"], 
 
 
 
-TOOLS: List[Callable[..., Any]] = [select_question, list_questions]
+@tool(args_schema=EndInterviewArgs)
+def end_interview(reason: str) -> str:
+    """End the biographical interview when sufficient information has been gathered."""
+    return f"Interview ended: {reason}"
+
+
+TOOLS: List[Callable[..., Any]] = [select_question, list_questions, end_interview]

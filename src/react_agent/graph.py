@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 
 from react_agent.configuration import Configuration
 from react_agent.state import InputState, State
-from react_agent.tools import TOOLS
+from react_agent.tools import TOOLS, end_interview_node
 from react_agent.utils import load_chat_model, get_personalized_questions, get_message_text
 from react_agent.prompts import QUESTION_SELECTION_PROMPT, QUESTION_CONTEXTUALIZATION_PROMPT, ANSWER_ANALYSIS_PROMPT
 
@@ -122,6 +122,18 @@ async def contextualize_question_with_llm(state: State, question: str) -> str:
         return question
 
 
+def check_interview_completion(questions: dict) -> bool:
+    """Check if 90% of questions are complete to trigger interview ending."""
+    if not questions:
+        return False
+    
+    total_questions = len(questions)
+    completed_questions = sum(1 for q in questions.values() if q["status"] == "complete")
+    completion_percentage = completed_questions / total_questions
+    
+    return completion_percentage >= 0.9
+
+
 async def select_question_node(state: State) -> dict:
     """Select the next question to ask based on priority and status, using LLM for intelligent selection."""
     questions_update = state.questions.copy()
@@ -144,6 +156,14 @@ async def select_question_node(state: State) -> dict:
     if len(state.messages) <= 1:
         return {"questions": questions_update}
     
+    # Check if 90% of questions are complete
+    if check_interview_completion(questions_update):
+        return {
+            "current_question_id": None,
+            "questions": questions_update,
+            "finished": True,
+        }
+    
     # Check if we need a new question (no current question OR current question is complete)
     need_new_question = (
         not state.current_question_id or 
@@ -158,20 +178,6 @@ async def select_question_node(state: State) -> dict:
         need_new_question = True
 
     if need_new_question:
-        
-        # Check if all questions are complete
-        all_complete = all(
-            questions_update[qid]["status"] == "complete" 
-            for qid in questions_update
-        )
-        
-        # If all questions are complete, end the interview
-        if all_complete:
-            return {
-                "current_question_id": None,
-                "questions": questions_update,
-                "finished": True,
-            }
         
         # Find available questions for each priority level, starting from highest priority
         for priority in PRIORITIES:
@@ -374,7 +380,7 @@ async def interview_agent(state: State) -> Dict[str, List[AIMessage]]:
     return {"messages": [response]}
 
 
-def route_model_output(state: State) -> Literal["__end__", "tools"]:
+def route_model_output(state: State) -> Literal["__end__", "tools", "end_interview"]:
     """Determine the next node based on the model's output.
 
     This function checks if the model's last message contains tool calls.
@@ -383,18 +389,29 @@ def route_model_output(state: State) -> Literal["__end__", "tools"]:
         state (State): The current state of the conversation.
 
     Returns:
-        str: The name of the next node to call ("__end__" or "tools").
+        str: The name of the next node to call ("__end__", "tools", or "end_interview").
     """
+    # Check if interview should end due to completion threshold
+    if state.finished:
+        return "end_interview"
+    
     last_message = state.messages[-1]
     if not isinstance(last_message, AIMessage):
         raise ValueError(
             f"Expected AIMessage in output edges, but got {type(last_message).__name__}"
         )
+    
+    # Handle tool calls
+    if last_message.tool_calls:
+        # Check if end_interview was called
+        for tool_call in last_message.tool_calls:
+            if tool_call["name"] == "end_interview":
+                return "end_interview"
+        # Otherwise go to tools for normal tool execution
+        return "tools"
+    
     # If there is no tool call, then we finish
-    if not last_message.tool_calls:
-        return "__end__"
-    # Otherwise we execute the requested actions
-    return "tools"
+    return "__end__"
 
 
 
@@ -407,6 +424,7 @@ builder.add_node("select_question", select_question_node)
 builder.add_node("answer_analysis", answer_analysis_node)
 builder.add_node(interview_agent)
 builder.add_node("tools", ToolNode(TOOLS))
+builder.add_node("end_interview", end_interview_node)
 
 # Set the entrypoint as `select_question`
 # This means that this node is the first one called
@@ -427,6 +445,9 @@ builder.add_conditional_edges(
 # Add a normal edge from `tools` to `interview_agent`
 # This creates a cycle: after using tools, we always return to the model
 builder.add_edge("tools", "interview_agent")
+
+# End interview leads to graph end
+builder.add_edge("end_interview", "__end__")
 
 
 
