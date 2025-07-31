@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Sequence, List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional, Sequence
 
 from langchain_core.messages import AnyMessage
 from langgraph.graph import add_messages
@@ -56,14 +56,12 @@ class State(InputState):
     # Interview-specific state fields
     questions: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     """Dictionary storing all interview questions and their metadata."""
-    
+
     question: Optional[str] = field(default=None)
     """The current question being asked in the interview."""
-    
+
     current_question_id: Optional[str] = field(default=None)
     """ID of the current question being asked."""
-    
+
     finished: bool = field(default=False)
     """Whether the interview has been completed."""
-    
-    

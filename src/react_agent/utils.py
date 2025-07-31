@@ -1,12 +1,13 @@
 """Utility & helper functions."""
 
+import json
+import pathlib
+from typing import Dict, List, Optional
+
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage
 
-import json
-import pathlib
-from typing import List, Dict, Optional
 
 def get_message_text(msg: BaseMessage) -> str:
     """Get the text content of a message."""
@@ -28,8 +29,6 @@ def load_chat_model(fully_specified_name: str) -> BaseChatModel:
     """
     provider, model = fully_specified_name.split("/", maxsplit=1)
     return init_chat_model(model, model_provider=provider)
-
-
 
 
 _Q_PATH = pathlib.Path(__file__).parent / "questions.json"
@@ -70,7 +69,6 @@ def load_biographical_questions(priority: Optional[int] = None) -> List[Dict]:
     return [q for q in BIOGRAPHICAL_QUESTIONS if q["priority"] == priority]
 
 
-
 def personalise(text: str, subject_info: dict) -> str:
     """Personalise text by replacing placeholders with subject information."""
     return text.format(**subject_info)
@@ -82,12 +80,12 @@ def get_personalized_questions(deceased_name: str = None) -> List[dict]:
     subject_info = DEFAULT_SUBJECT_INFO.copy()
     if deceased_name:
         subject_info["NAME"] = deceased_name
-    
+
     personalized_questions = []
     for question in BIOGRAPHICAL_QUESTIONS:
         personalized_question = {
             **question,
-            "question": personalise(question["question"], subject_info)
+            "question": personalise(question["question"], subject_info),
         }
         personalized_questions.append(personalized_question)
     return personalized_questions

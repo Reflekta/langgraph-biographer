@@ -39,6 +39,14 @@ class Configuration:
         },
     )
 
+    elder_id: str = field(
+        default="",
+        metadata={
+            "description": "The unique identifier of the elder being interviewed. "
+            "This is used for thread isolation and ensuring interviews are specific to each elder."
+        },
+    )
+
     model: Annotated[str, {"__template_metadata__": {"kind": "llm"}}] = field(
         default="openai/gpt-4.1-nano",
         metadata={
