@@ -123,29 +123,17 @@ async def contextualize_question_with_llm(state: State, question: str) -> str:
 
 
 def check_interview_completion(questions: dict) -> bool:
-    """Check if interview should end based on question completion."""
+    """Check if 90% of questions are complete or attempted to trigger interview ending."""
     if not questions:
         return False
     
     total_questions = len(questions)
+    # Count questions that are complete OR have been attempted (in_progress or partial)
+    attempted_questions = sum(1 for q in questions.values() 
+                           if q["status"] in ["complete", "partial", "in_progress"])
+    completion_percentage = attempted_questions / total_questions
     
-    # For small question sets (≤5 questions), use a lower threshold
-    if total_questions <= 5:
-        # Count questions that are complete
-        complete_questions = sum(1 for q in questions.values() 
-                               if q["status"] == "complete")
-        # End if all questions are complete
-        should_end = complete_questions >= total_questions
-        print(f"DEBUG: Interview completion check - total_questions: {total_questions}, complete_questions: {complete_questions}, should_end: {should_end}")
-        return should_end
-    else:
-        # For larger question sets, use the original 90% threshold
-        attempted_questions = sum(1 for q in questions.values() 
-                               if q["status"] in ["complete", "partial", "in_progress"])
-        completion_percentage = attempted_questions / total_questions
-        should_end = completion_percentage >= 0.9
-        print(f"DEBUG: Interview completion check - total_questions: {total_questions}, attempted_questions: {attempted_questions}, completion_percentage: {completion_percentage}, should_end: {should_end}")
-        return should_end
+    return completion_percentage >= 0.9
 
 
 async def select_question_node(state: State) -> dict:
@@ -172,18 +160,6 @@ async def select_question_node(state: State) -> dict:
     
     # Check if 90% of questions are complete
     if check_interview_completion(questions_update):
-        return {
-            "current_question_id": None,
-            "questions": questions_update,
-            "finished": True,
-        }
-    
-    # Additional check: if all questions have been attempted (not just complete), end the interview
-    total_questions = len(questions_update)
-    attempted_questions = sum(1 for q in questions_update.values() 
-                           if q["status"] in ["complete", "partial", "in_progress"])
-    if attempted_questions >= total_questions:
-        print(f"DEBUG: All questions attempted - ending interview")
         return {
             "current_question_id": None,
             "questions": questions_update,
@@ -230,15 +206,6 @@ async def select_question_node(state: State) -> dict:
                     "current_question_id": selected_question["id"],
                     "questions": questions_update,
                 }
-        
-        # If we get here, no more questions are available - end the interview
-        print(f"DEBUG: No more questions available - ending interview")
-        print(f"DEBUG: Questions status: {[(qid, q['status']) for qid, q in questions_update.items()]}")
-        return {
-            "current_question_id": None,
-            "questions": questions_update,
-            "finished": True,
-        }
 
     return {"questions": questions_update}
 
@@ -323,7 +290,6 @@ async def answer_analysis_node(state: State) -> dict:
         # Mark as complete if:
         # 1. LLM says it's complete, OR
         # 2. We've had 2+ user responses to this question (time to move on)
-        # 3. For factual questions, if we got a reasonable answer (fallback)
         if analysis_result.status == "complete" or total_answers >= 2:
             questions_update[current_qid]["status"] = "complete"
             if total_answers >= 2:
@@ -332,9 +298,6 @@ async def answer_analysis_node(state: State) -> dict:
             questions_update[current_qid]["status"] = "partial"
         else:
             questions_update[current_qid]["status"] = "in_progress"
-        
-        # Debug logging
-        print(f"DEBUG: Question {current_qid} analysis - status: {analysis_result.status}, total_answers: {total_answers}, final_status: {questions_update[current_qid]['status']}")
 
     return {"questions": questions_update}
 
