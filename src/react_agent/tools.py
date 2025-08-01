@@ -29,17 +29,22 @@ async def end_interview_node(state: State) -> dict:
     """Node to handle interview completion."""
     from langchain_core.messages import AIMessage
 
-    deceased_name = Configuration.from_context().deceased_name
+    configuration = Configuration.from_context(state)
+    deceased_name = configuration.deceased_name
+    interviewee_name = configuration.interviewee_name
+
+    # Remove the special end interview message if it exists
+    messages = [msg for msg in state.messages if msg.content != "__END_INTERVIEW__"]
 
     end_message = AIMessage(
-        content=f"""Thank you so much for sharing these precious memories of {deceased_name} with me. I've learned enough about them to create a meaningful biography. 
+        content=f"""Thank you so much, {interviewee_name}, for sharing these precious memories of {deceased_name} with me. I've learned enough about them to create a meaningful biography. 
 
 This interview has captured the essence of who they were as a person - their personality, relationships, values, and the impact they had on others. These memories will help keep {deceased_name}'s spirit alive for generations to come.
 
 You can now go chat with {deceased_name} and continue to honor their memory through conversation."""
     )
 
-    return {"messages": [end_message], "finished": True}
+    return {"messages": messages + [end_message], "finished": True}
 
 
 # Initialize LLM for analysis

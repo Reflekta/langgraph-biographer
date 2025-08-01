@@ -45,7 +45,7 @@ class AnswerAnalysis(BaseModel):
 
 async def select_question_with_llm(state: State, priority: int, available_questions: List[dict]) -> dict:
     """Use LLM to intelligently select the best question based on conversation context."""
-    configuration = Configuration.from_context()
+    configuration = Configuration.from_context(state)
     
     # Get the last 5 messages for context
     last_messages = state.messages[-5:] if len(state.messages) >= 5 else state.messages
@@ -92,7 +92,7 @@ async def select_question_with_llm(state: State, priority: int, available_questi
 
 async def contextualize_question_with_llm(state: State, question: str) -> str:
     """Use LLM to rephrase the question to fit the conversation context."""
-    configuration = Configuration.from_context()
+    configuration = Configuration.from_context(state)
     
     # Get the last 3 messages for immediate context
     last_messages = state.messages[-3:] if len(state.messages) >= 3 else state.messages
@@ -123,21 +123,35 @@ async def contextualize_question_with_llm(state: State, question: str) -> str:
 
 
 def check_interview_completion(questions: dict) -> bool:
-    """Check if 90% of questions are complete to trigger interview ending."""
+    """Check if interview should end based on question completion."""
     if not questions:
         return False
     
     total_questions = len(questions)
-    completed_questions = sum(1 for q in questions.values() if q["status"] == "complete")
-    completion_percentage = completed_questions / total_questions
     
-    return completion_percentage >= 0.9
+    # For small question sets (≤5 questions), use a lower threshold
+    if total_questions <= 5:
+        # Count questions that are complete
+        complete_questions = sum(1 for q in questions.values() 
+                               if q["status"] == "complete")
+        # End if all questions are complete
+        should_end = complete_questions >= total_questions
+        print(f"DEBUG: Interview completion check - total_questions: {total_questions}, complete_questions: {complete_questions}, should_end: {should_end}")
+        return should_end
+    else:
+        # For larger question sets, use the original 90% threshold
+        attempted_questions = sum(1 for q in questions.values() 
+                               if q["status"] in ["complete", "partial", "in_progress"])
+        completion_percentage = attempted_questions / total_questions
+        should_end = completion_percentage >= 0.9
+        print(f"DEBUG: Interview completion check - total_questions: {total_questions}, attempted_questions: {attempted_questions}, completion_percentage: {completion_percentage}, should_end: {should_end}")
+        return should_end
 
 
 async def select_question_node(state: State) -> dict:
     """Select the next question to ask based on priority and status, using LLM for intelligent selection."""
     questions_update = state.questions.copy()
-    configuration = Configuration.from_context()
+    configuration = Configuration.from_context(state)
     
     # Ensure questions are initialised
     if not questions_update:
@@ -158,6 +172,18 @@ async def select_question_node(state: State) -> dict:
     
     # Check if 90% of questions are complete
     if check_interview_completion(questions_update):
+        return {
+            "current_question_id": None,
+            "questions": questions_update,
+            "finished": True,
+        }
+    
+    # Additional check: if all questions have been attempted (not just complete), end the interview
+    total_questions = len(questions_update)
+    attempted_questions = sum(1 for q in questions_update.values() 
+                           if q["status"] in ["complete", "partial", "in_progress"])
+    if attempted_questions >= total_questions:
+        print(f"DEBUG: All questions attempted - ending interview")
         return {
             "current_question_id": None,
             "questions": questions_update,
@@ -204,6 +230,15 @@ async def select_question_node(state: State) -> dict:
                     "current_question_id": selected_question["id"],
                     "questions": questions_update,
                 }
+        
+        # If we get here, no more questions are available - end the interview
+        print(f"DEBUG: No more questions available - ending interview")
+        print(f"DEBUG: Questions status: {[(qid, q['status']) for qid, q in questions_update.items()]}")
+        return {
+            "current_question_id": None,
+            "questions": questions_update,
+            "finished": True,
+        }
 
     return {"questions": questions_update}
 
@@ -214,7 +249,7 @@ async def answer_analysis_node(state: State) -> dict:
     
     # Initialize questions if empty
     if not questions_update:
-        configuration = Configuration.from_context()
+        configuration = Configuration.from_context(state)
         for q in get_personalized_questions(configuration.deceased_name):
             questions_update[q["id"]] = {
                 "question": q["question"],
@@ -244,7 +279,7 @@ async def answer_analysis_node(state: State) -> dict:
 
     latest_answer = user_messages[-1]
     current_qid = state.current_question_id
-    configuration = Configuration.from_context()
+    configuration = Configuration.from_context(state)
 
     # Get the current question text
     question_text = next(
@@ -288,6 +323,7 @@ async def answer_analysis_node(state: State) -> dict:
         # Mark as complete if:
         # 1. LLM says it's complete, OR
         # 2. We've had 2+ user responses to this question (time to move on)
+        # 3. For factual questions, if we got a reasonable answer (fallback)
         if analysis_result.status == "complete" or total_answers >= 2:
             questions_update[current_qid]["status"] = "complete"
             if total_answers >= 2:
@@ -296,17 +332,27 @@ async def answer_analysis_node(state: State) -> dict:
             questions_update[current_qid]["status"] = "partial"
         else:
             questions_update[current_qid]["status"] = "in_progress"
+        
+        # Debug logging
+        print(f"DEBUG: Question {current_qid} analysis - status: {analysis_result.status}, total_answers: {total_answers}, final_status: {questions_update[current_qid]['status']}")
 
     return {"questions": questions_update}
 
 
 def make_welcome_message(configuration: Configuration) -> str:
     """Create the opening welcome message for family interviews."""
-    return (
+    print(f"DEBUG: make_welcome_message() called")
+    print(f"DEBUG: configuration.deceased_name = '{configuration.deceased_name}'")
+    print(f"DEBUG: configuration.interviewee_name = '{configuration.interviewee_name}'")
+    
+    welcome_msg = (
         f"Hi {configuration.interviewee_name}, I'm Reflekta's biographer. I'm here to help preserve {configuration.deceased_name}'s life story so you and your family can connect with them for generations to come.\n\n"
         "I'll ask some questions to guide us, but feel free to answer in whatever way feels natural. If a memory takes you in a different direction, just go with it — I'll follow and ask more as we go.\n\n"
         f"To start: Could you tell me about your relationship with {configuration.deceased_name}?"
     )
+    
+    print(f"DEBUG: Generated welcome message: {welcome_msg}")
+    return welcome_msg
 
 
 async def interview_agent(state: State) -> Dict[str, List[AIMessage]]:
@@ -320,13 +366,18 @@ async def interview_agent(state: State) -> Dict[str, List[AIMessage]]:
     Returns:
         dict: A dictionary containing the model's response message.
     """
-    configuration = Configuration.from_context()
+    configuration = Configuration.from_context(state)
 
     # Handle first message with welcome
     if len(state.messages) == 1:
         return {
             "messages": [AIMessage(content=make_welcome_message(configuration))]
         }
+
+    # Check if interview is finished and should end
+    if state.finished:
+        # Return a special message to trigger routing to end_interview
+        return {"messages": [AIMessage(content="__END_INTERVIEW__")]}
 
     # Check if we have a selected question to ask
     if state.current_question_id and state.current_question_id in state.questions:
@@ -395,6 +446,11 @@ def route_model_output(state: State) -> Literal["__end__", "tools", "end_intervi
     if state.finished:
         return "end_interview"
     
+    # Check for special end interview message
+    if state.messages and isinstance(state.messages[-1], AIMessage):
+        if state.messages[-1].content == "__END_INTERVIEW__":
+            return "end_interview"
+    
     last_message = state.messages[-1]
     if not isinstance(last_message, AIMessage):
         raise ValueError(
@@ -432,7 +488,18 @@ builder.add_edge("__start__", "answer_analysis")
 
 # Add edge from select_question to interview_agent
 builder.add_edge("answer_analysis", "select_question")
-builder.add_edge("select_question", "interview_agent")
+
+# Add conditional edge from select_question to handle completion
+def route_after_question_selection(state: State) -> Literal["interview_agent", "end_interview"]:
+    """Route after question selection based on completion status."""
+    if state.finished:
+        return "end_interview"
+    return "interview_agent"
+
+builder.add_conditional_edges(
+    "select_question",
+    route_after_question_selection,
+)
 
 # Add a conditional edge to determine the next step after `interview_agent`
 builder.add_conditional_edges(

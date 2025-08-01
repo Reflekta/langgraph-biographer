@@ -37,6 +37,16 @@ class InputState:
     updating by ID to maintain an "append-only" state unless a message with the same ID is provided.
     """
 
+    # Personalization fields for welcome message and interview context
+    deceased_name: str = field(default="")
+    """The name of the deceased person being memorialized."""
+    
+    interviewee_name: str = field(default="")
+    """The name of the person being interviewed."""
+    
+    elder_id: str = field(default="")
+    """The unique identifier of the elder being interviewed."""
+
 
 @dataclass
 class State(InputState):

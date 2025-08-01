@@ -63,8 +63,8 @@ class Configuration:
     )
 
     @classmethod
-    def from_context(cls) -> Configuration:
-        """Create a Configuration instance from a RunnableConfig object."""
+    def from_context(cls, state=None) -> Configuration:
+        """Create a Configuration instance from a RunnableConfig object and optionally from state."""
         try:
             config = get_config()
         except RuntimeError:
@@ -72,4 +72,30 @@ class Configuration:
         config = ensure_config(config)
         configurable = config.get("configurable") or {}
         _fields = {f.name for f in fields(cls) if f.init}
-        return cls(**{k: v for k, v in configurable.items() if k in _fields})
+        
+        # Debug logging
+        print(f"DEBUG: Configuration.from_context() called")
+        print(f"DEBUG: Raw config: {config}")
+        print(f"DEBUG: Configurable: {configurable}")
+        print(f"DEBUG: Available fields: {_fields}")
+        
+        filtered_config = {k: v for k, v in configurable.items() if k in _fields}
+        print(f"DEBUG: Filtered config: {filtered_config}")
+        
+        # Check state for name fields as fallback if not in config
+        if state:
+            print(f"DEBUG: State provided - deceased_name: {getattr(state, 'deceased_name', 'not found')}, interviewee_name: {getattr(state, 'interviewee_name', 'not found')}")
+            if 'deceased_name' not in filtered_config and hasattr(state, 'deceased_name') and state.deceased_name:
+                filtered_config['deceased_name'] = state.deceased_name
+                print(f"DEBUG: Using deceased_name from state: {state.deceased_name}")
+            if 'interviewee_name' not in filtered_config and hasattr(state, 'interviewee_name') and state.interviewee_name:
+                filtered_config['interviewee_name'] = state.interviewee_name
+                print(f"DEBUG: Using interviewee_name from state: {state.interviewee_name}")
+            if 'elder_id' not in filtered_config and hasattr(state, 'elder_id') and state.elder_id:
+                filtered_config['elder_id'] = state.elder_id
+                print(f"DEBUG: Using elder_id from state: {state.elder_id}")
+        
+        instance = cls(**filtered_config)
+        print(f"DEBUG: Created Configuration - deceased_name: {instance.deceased_name}, interviewee_name: {instance.interviewee_name}")
+        
+        return instance
